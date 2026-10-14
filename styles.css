@@ -1,0 +1,38 @@
+:root{
+  --bg:#fff; --card:#fbfdff; --text:#071233; --muted:#475569; --primary:#0366d6;
+  --accent:#0ea5e9; --danger:#ef4444;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Noto Sans,Arial;background:var(--bg);color:var(--text);padding:12px; -webkit-tap-highlight-color: transparent;}
+.container{max-width:900px;margin:0 auto;display:grid;gap:12px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:8px}
+h1{font-size:1.1rem;margin:0}
+.iconBtn{background:transparent;border:1px solid #e6eef8;border-radius:8px;padding:6px 8px;cursor:pointer}
+.card{background:var(--card);padding:12px;border-radius:12px;border:1px solid #e6eef8}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+select{padding:8px;border-radius:8px;border:1px solid #cfe8ff}
+button{background:var(--primary);color:#fff;border:none;padding:10px 12px;border-radius:10px;cursor:pointer}
+button.primary{background:linear-gradient(90deg,var(--accent),var(--primary))}
+button.big{flex:1;padding:12px;font-weight:700}
+button[aria-pressed="true"]{outline:3px solid rgba(3,102,214,0.18)}
+.videoWrap{position:relative;width:100%;padding-top:62%;background:#000;border-radius:12px;overflow:hidden}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.roi{position:absolute;left:50%;top:50%;width:28%;height:28%;transform:translate(-50%,-50%);border:3px dashed rgba(255,255,255,0.9);box-shadow:0 0 0 9999px rgba(0,0,0,0.28);pointer-events:none;border-radius:6px}
+.hint{margin-top:8px;color:var(--muted);font-size:0.95rem}
+.status{font-weight:700;margin-bottom:6px}
+.resultRow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.swatchWrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+.swatch{width:72px;height:72px;border-radius:10px;border:1px solid #000;background:#fff}
+.vals{background:#f0f6ff;padding:8px;border-radius:8px;min-width:200px;max-width:100%;overflow:auto}
+.row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.note{color:var(--muted);font-size:0.9rem;margin-top:6px}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px}
+.modal[aria-hidden="false"]{display:flex;background:rgba(0,0,0,0.45)}
+.modalContent{background:#fff;padding:16px;border-radius:12px;max-width:520px;width:100%}
+.sr{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
+@media (max-width:520px){
+  .roi{width:42%;height:42%}
+  .swatch{width:56px;height:56px}
+  button{padding:12px}
+}

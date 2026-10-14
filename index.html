@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>颜色与污渍检测（Web + H5 / PWA）</title>
+  <meta name="theme-color" content="#0366d6" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
+</head>
+<body>
+  <main id="main" role="main" class="container">
+    <header class="topbar">
+      <h1 id="title">颜色与污渍检测</h1>
+      <button id="guideBtn" class="iconBtn" aria-label="使用指南">?</button>
+    </header>
+
+    <section class="card" aria-labelledby="camTitle">
+      <h2 id="camTitle">相机检测（把目标放在框内）</h2>
+
+      <div class="controls">
+        <label for="cameraSelect" class="sr">选择摄像头</label>
+        <select id="cameraSelect" aria-label="选择摄像头"></select>
+        <button id="toggleTorch" type="button" aria-pressed="false">闪光灯</button>
+        <button id="fullBtn" type="button">全屏拍摄</button>
+      </div>
+
+      <div class="videoWrap" aria-live="polite">
+        <video id="video" autoplay playsinline muted></video>
+        <div id="roi" class="roi" aria-hidden="true"></div>
+      </div>
+
+      <div class="row">
+        <button id="calibrateBtn" class="big" type="button">白卡校准（推荐）</button>
+        <button id="captureBtn" class="big primary" type="button">拍照并检测</button>
+      </div>
+
+      <div class="hint" id="hintText">提示：将纸巾/布平铺，确保光线充足，框内对准要检测区域。</div>
+    </section>
+
+    <section class="card" aria-labelledby="resultTitle">
+      <h2 id="resultTitle">检测结果</h2>
+      <div id="status" class="status" aria-live="polite">未检测</div>
+
+      <div class="resultRow">
+        <div class="swatchWrap">
+          <div id="swatch" class="swatch" role="img" aria-label="颜色样本"></div>
+          <div class="swatchLabel">平均颜色</div>
+        </div>
+        <pre id="vals" class="vals" aria-hidden="false">—</pre>
+      </div>
+
+      <div class="row">
+        <button id="repeatBtn" type="button">重复播报</button>
+        <button id="exportBtn" type="button">导出结果</button>
+        <button id="saveBtn" type="button">保存本地</button>
+      </div>
+    </section>
+
+    <footer class="note">
+      隐私说明：图片仅在本地处理，不会上传；该工具仅供辅助判断，非医疗诊断。
+    </footer>
+
+    <div id="guideModal" class="modal" aria-hidden="true">
+      <div class="modalContent" role="dialog" aria-labelledby="guideTitle">
+        <h3 id="guideTitle">使用指南（语音提示可用）</h3>
+        <ul>
+          <li>在充足光线下拍摄，后置摄像头效果更好。</li>
+          <li>建议先进行白卡校准：把白纸放入框内并点击“白卡校准”。</li>
+          <li>把纸巾或内裤平铺并将要检测区域置于虚线框内，点击“拍照并检测”。</li>
+          <li>若页面提示“无法判断”，请重拍或优化光照与角度。</li>
+        </ul>
+        <div class="row">
+          <button id="closeGuide">关闭</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
