@@ -1,5 +1,6 @@
 // app.js - Web + H5 PWA 颜色/污渍检测（本地运行）
 // 特性：后置摄像头优先、白卡校准、红/黄/棕判定、语音 + 触觉反馈、PWA 注册
+// 新增：点击任意处拍照并检测，语音引导用户把纸张放在框内
 
 const video = document.getElementById('video');
 const cameraSelect = document.getElementById('cameraSelect');
@@ -23,6 +24,7 @@ let videoTrack = null;
 let whiteRef = null;
 let lastResult = null;
 let torchOn = false;
+let lastTapAt = 0;
 const STORAGE_KEY = 'color-check-history-v1';
 
 function speak(text){
@@ -36,6 +38,49 @@ function speak(text){
 
 function tactile(pattern=50){
   if(navigator.vibrate) navigator.vibrate(pattern);
+}
+
+function canUseGlobalTap(event){
+  if(!stream || !video || !video.videoWidth || !video.videoHeight) return false;
+  if(!event || !event.target) return false;
+  if(event.target.closest && (
+    event.target.closest('button') ||
+    event.target.closest('select') ||
+    event.target.closest('.modal') ||
+    event.target.closest('#guideModal') ||
+    event.target.closest('.modalContent')
+  )) return false;
+  return true;
+}
+
+function captureNow(){
+  const sample = sampleROI();
+  if(!sample){
+    statusEl.textContent = '拍摄失败，请重试';
+    speak('拍摄失败，请重试');
+    return;
+  }
+  const res = analyzeColor(sample);
+  showResult(res);
+}
+
+function handleGlobalTap(event){
+  if(!canUseGlobalTap(event)) return;
+  const now = performance.now();
+  if(now - lastTapAt < 500) return;
+  lastTapAt = now;
+  const target = event.target;
+  if(target && target.id === 'video') {
+    captureNow();
+    return;
+  }
+  if(target && target.closest && target.closest('#video')) {
+    captureNow();
+    return;
+  }
+  if(!target.closest || !target.closest('button,select')) {
+    captureNow();
+  }
 }
 
 async function listCameras(){
@@ -77,6 +122,8 @@ async function startCamera(deviceId){
     const cap = videoTrack.getCapabilities && videoTrack.getCapabilities();
     if(cap && cap.torch) toggleTorch.style.display = 'inline-block';
     else toggleTorch.style.display = 'none';
+    hintText.textContent = '提示：把纸张放进虚线框内，点击屏幕任意位置即可拍照并检测；也可使用下方按钮。';
+    speak('相机已启动。请把纸张放进虚线框内，然后点击屏幕任意位置拍照。');
   }catch(e){
     console.error('startCamera', e);
     statusEl.textContent = '无法访问相机：' + (e.message || e.name);
@@ -190,16 +237,12 @@ calibrateBtn.addEventListener('click', ()=>{
   if(!sample){ statusEl.textContent='校准失败，请确保相机已就绪'; speak('校准失败'); return; }
   whiteRef = { r: sample.r, g: sample.g, b: sample.b };
   statusEl.textContent = `白卡已校准 R:${whiteRef.r} G:${whiteRef.g} B:${whiteRef.b}`;
-  speak('白卡已校准');
+  hintText.textContent = '白卡已校准。把纸张放进虚线框内，点击屏幕任意位置即可检测。';
+  speak('白卡已校准。现在请将纸张放进框内，点击屏幕任意位置拍照检测。');
   tactile([40,20,40]);
 });
 
-captureBtn.addEventListener('click', ()=>{
-  const sample = sampleROI();
-  if(!sample){ statusEl.textContent='拍摄失败，请重试'; speak('拍摄失败'); return; }
-  const res = analyzeColor(sample);
-  showResult(res);
-});
+captureBtn.addEventListener('click', ()=> captureNow());
 
 repeatBtn.addEventListener('click', ()=>{ if(lastResult){ speak(lastResult.result.label); } else { speak('尚未检测'); }});
 exportBtn.addEventListener('click', ()=>{
@@ -238,9 +281,27 @@ fullBtn.addEventListener('click', async ()=>{
 });
 
 cameraSelect.addEventListener('change', ()=> startCamera(cameraSelect.value));
-
 guideBtn.addEventListener('click', ()=> { guideModal.setAttribute('aria-hidden','false'); guideModal.querySelector('button')?.focus(); });
 closeGuide?.addEventListener('click', ()=> { guideModal.setAttribute('aria-hidden','true'); });
+
+document.addEventListener('click', handleGlobalTap, true);
+
+document.addEventListener('keydown', (e)=>{
+  if (e.key === 'Escape') {
+    if (guideModal && guideModal.getAttribute('aria-hidden') === 'false') {
+      guideModal.setAttribute('aria-hidden', 'true');
+      return;
+    }
+    if (stream) {
+      speak('已退出相机');
+      statusEl.textContent = '已退出相机';
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+      videoTrack = null;
+      video.srcObject = null;
+    }
+  }
+});
 
 (async function init(){
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
