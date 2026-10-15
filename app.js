@@ -27,6 +27,8 @@ let torchOn = false;
 let lastTapAt = 0;
 const STORAGE_KEY = 'color-check-history-v1';
 
+const ENTRY_PROMPT = '相机已启动。请把纸张放进虚线框内，然后点击屏幕任意位置拍照。';
+
 function speak(text){
   if('speechSynthesis' in window){
     const u = new SpeechSynthesisUtterance(text);
@@ -70,6 +72,7 @@ function handleGlobalTap(event){
   if(now - lastTapAt < 500) return;
   lastTapAt = now;
   const target = event.target;
+  // If user tapped the video element (or inside it), trigger capture
   if(target && target.id === 'video') {
     captureNow();
     return;
@@ -78,6 +81,7 @@ function handleGlobalTap(event){
     captureNow();
     return;
   }
+  // If user didn't tap an explicit UI control, trigger capture
   if(!target.closest || !target.closest('button,select')) {
     captureNow();
   }
@@ -123,7 +127,8 @@ async function startCamera(deviceId){
     if(cap && cap.torch) toggleTorch.style.display = 'inline-block';
     else toggleTorch.style.display = 'none';
     hintText.textContent = '提示：把纸张放进虚线框内，点击屏幕任意位置即可拍照并检测；也可使用下方按钮。';
-    speak('相机已启动。请把纸张放进虚线框内，然后点击屏幕任意位置拍照。');
+    // Use ENTRY_PROMPT variable so we can attempt playback from multiple places
+    speak(ENTRY_PROMPT);
   }catch(e){
     console.error('startCamera', e);
     statusEl.textContent = '无法访问相机：' + (e.message || e.name);
@@ -244,12 +249,13 @@ calibrateBtn.addEventListener('click', ()=>{
 
 captureBtn.addEventListener('click', ()=> captureNow());
 
-repeatBtn.addEventListener('click', ()=>{ if(lastResult){ speak(lastResult.result.label); } else { speak('尚未检测'); }});
+repeatBtn.addEventListener('click', ()=>{ if(lastResult){ speak(lastResult.result.label); } else { speak('尚未检测'); } });
 exportBtn.addEventListener('click', ()=>{
   if(!lastResult){ alert('无可导出结果'); return; }
   const blob = new Blob([JSON.stringify(lastResult, null, 2)], {type:'application/json'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'color-check-result.json'; document.body.appendChild(a); a.click(); a.remove();
 });
+
 saveBtn.addEventListener('click', ()=>{
   if(!lastResult){ alert('无可保存结果'); return; }
   const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
@@ -284,7 +290,9 @@ cameraSelect.addEventListener('change', ()=> startCamera(cameraSelect.value));
 guideBtn.addEventListener('click', ()=> { guideModal.setAttribute('aria-hidden','false'); guideModal.querySelector('button')?.focus(); });
 closeGuide?.addEventListener('click', ()=> { guideModal.setAttribute('aria-hidden','true'); });
 
+// Bind both click and touch events so mobile taps are recognized immediately
 document.addEventListener('click', handleGlobalTap, true);
+document.addEventListener('touchend', handleGlobalTap, true);
 
 document.addEventListener('keydown', (e)=>{
   if (e.key === 'Escape') {
@@ -303,12 +311,34 @@ document.addEventListener('keydown', (e)=>{
   }
 });
 
+// Attempt to ensure speech plays on load; many mobile browsers block autoplay.
+function ensureAudioOnGesture(){
+  const handler = ()=>{
+    // replay the entry prompt on first user gesture if needed
+    speak(ENTRY_PROMPT);
+    document.body.removeEventListener('touchstart', handler, {passive:true});
+    document.body.removeEventListener('click', handler, {capture:true});
+  };
+  try{
+    document.body.addEventListener('touchstart', handler, {passive:true});
+    document.body.addEventListener('click', handler, {capture:true});
+  }catch(e){
+    // older browsers may not support options - fallback
+    document.body.addEventListener('touchstart', handler);
+    document.body.addEventListener('click', handler);
+  }
+}
+
 (async function init(){
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
     statusEl.textContent='浏览器不支持相机，请使用最新移动浏览器（Chrome/Edge/Firefox）';
     speak('浏览器不支持相机访问');
     return;
   }
+  // Try to speak immediately (may be blocked). Also set up gesture fallback.
+  speak(ENTRY_PROMPT);
+  ensureAudioOnGesture();
+
   await listCameras();
   const opts = Array.from(cameraSelect.options);
   let idx = opts.findIndex(o=>/back|rear|environment/i.test(o.text));
