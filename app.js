@@ -35,6 +35,7 @@ function dbg(...args){ if(ENABLE_DEBUG) console.log('[cam-debug]', ...args); }
 
 let tapOverlay = null;
 let ttsButton = null;
+let audioCtx = null;
 
 function ensureTapOverlay(){
   if(tapOverlay) return;
@@ -85,7 +86,8 @@ function ensureTtsButton(){
   });
   ttsButton.addEventListener('click', ()=>{
     dbg('ttsButton clicked');
-    speak(ENTRY_PROMPT);
+    // Play a short beep first so mobile browsers allow subsequent speech
+    playShortBeep().then(()=> speak(ENTRY_PROMPT));
     ttsButton.style.display = 'none';
   });
   document.body.appendChild(ttsButton);
@@ -152,6 +154,37 @@ function handleGlobalTap(event){
   }
 }
 
+// Play a short beep using WebAudio to create a user-gesture-initiated audio context
+function playShortBeep(durationMs=80, freq=880){
+  return new Promise((resolve)=>{
+    try{
+      if(!audioCtx){
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      // Resume context if suspended
+      if(audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+      gain.gain.exponentialRampToValueAtTime(0.2, now + 0.01);
+      osc.start(now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + durationMs/1000);
+      osc.stop(now + durationMs/1000 + 0.02);
+      osc.onended = () => { resolve(); };
+    }catch(e){
+      dbg('playShortBeep failed', e);
+      resolve();
+    }
+  });
+}
+
 async function listCameras(){
   try{
     const devices = await navigator.mediaDevices.enumerateDevices();
@@ -192,7 +225,7 @@ async function startCamera(deviceId){
     if(cap && cap.torch) toggleTorch.style.display = 'inline-block';
     else toggleTorch.style.display = 'none';
     hintText.textContent = '提示：把纸张放进虚线框内，点击屏幕任意位置即可拍照并检测；也可使用下方按钮。';
-    // Use ENTRY_PROMPT variable so we can attempt playback from multiple places
+    // Try speaking (may be blocked)
     speak(ENTRY_PROMPT);
 
     // show full-screen overlay to ensure taps are captured even if other elements interfere
@@ -394,11 +427,23 @@ document.addEventListener('keydown', (e)=>{
 
 // Attempt to ensure speech plays on load; many mobile browsers block autoplay.
 function ensureAudioOnGesture(){
-  const handler = ()=>{
-    // replay the entry prompt on first user gesture if needed
+  const handler = async ()=>{
+    // play a short beep first, then speak the entry prompt
+    dbg('ensureAudioOnGesture: user gesture received; playing beep');
+    try{
+      await playShortBeep();
+    }catch(e){ dbg('beep failed', e); }
     speak(ENTRY_PROMPT);
-    document.body.removeEventListener('touchstart', handler, {passive:true});
-    document.body.removeEventListener('click', handler, {capture:true});
+    try{
+      document.body.removeEventListener('touchstart', handler, {passive:true});
+      document.body.removeEventListener('click', handler, {capture:true});
+    }catch(e){
+      // fallback removal
+      document.body.removeEventListener('touchstart', handler);
+      document.body.removeEventListener('click', handler);
+    }
+    // hide manual button if visible
+    if(ttsButton) ttsButton.style.display = 'none';
   };
   try{
     document.body.addEventListener('touchstart', handler, {passive:true});
@@ -417,6 +462,7 @@ function ensureAudioOnGesture(){
     return;
   }
   // Try to speak immediately (may be blocked). Also set up gesture fallback.
+  // We still attempt speak(), but ensureAudioOnGesture will play a short user-gesture beep then speak.
   speak(ENTRY_PROMPT);
   ensureAudioOnGesture();
 
