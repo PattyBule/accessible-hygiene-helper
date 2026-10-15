@@ -29,6 +29,72 @@ const STORAGE_KEY = 'color-check-history-v1';
 
 const ENTRY_PROMPT = '相机已启动。请把纸张放进虚线框内，然后点击屏幕任意位置拍照。';
 
+/* === debug + overlay + manual TTS fallback === */
+const ENABLE_DEBUG = true;
+function dbg(...args){ if(ENABLE_DEBUG) console.log('[cam-debug]', ...args); }
+
+let tapOverlay = null;
+let ttsButton = null;
+
+function ensureTapOverlay(){
+  if(tapOverlay) return;
+  tapOverlay = document.createElement('div');
+  tapOverlay.id = 'tapOverlay';
+  Object.assign(tapOverlay.style, {
+    position: 'absolute',
+    left: 0, top: 0, right: 0, bottom: 0,
+    zIndex: 9999,
+    background: 'transparent',
+    // capture pointer events
+  });
+  tapOverlay.addEventListener('touchend', function(e){
+    dbg('tapOverlay touchend');
+    e.preventDefault();
+    handleGlobalTap(e);
+  }, {passive:false});
+  tapOverlay.addEventListener('click', function(e){
+    dbg('tapOverlay click');
+    handleGlobalTap(e);
+  }, true);
+  const parent = video.parentElement || document.body;
+  parent.style.position = parent.style.position || 'relative';
+  parent.appendChild(tapOverlay);
+}
+
+function showTapOverlay(show){
+  if(!tapOverlay) ensureTapOverlay();
+  tapOverlay.style.display = show ? 'block' : 'none';
+  dbg('tapOverlay display', show);
+}
+
+function ensureTtsButton(){
+  if(ttsButton) return;
+  ttsButton = document.createElement('button');
+  ttsButton.id = 'ttsButton';
+  ttsButton.textContent = '播放提示音';
+  Object.assign(ttsButton.style, {
+    position: 'fixed',
+    right: '12px',
+    bottom: '80px',
+    zIndex: 99999,
+    padding: '8px 12px',
+    background: '#0b84ff',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px'
+  });
+  ttsButton.addEventListener('click', ()=>{
+    dbg('ttsButton clicked');
+    speak(ENTRY_PROMPT);
+    ttsButton.style.display = 'none';
+  });
+  document.body.appendChild(ttsButton);
+  ttsButton.style.display = 'none';
+}
+
+window.addEventListener('beforeunload', ()=>{ showTapOverlay(false); });
+/* === end overlay code === */
+
 function speak(text){
   if('speechSynthesis' in window){
     const u = new SpeechSynthesisUtterance(text);
@@ -67,12 +133,12 @@ function captureNow(){
 }
 
 function handleGlobalTap(event){
+  dbg('handleGlobalTap target=', event && event.target && (event.target.id || event.target.tagName), 'videoReady=', !!(video && video.videoWidth));
   if(!canUseGlobalTap(event)) return;
   const now = performance.now();
   if(now - lastTapAt < 500) return;
   lastTapAt = now;
   const target = event.target;
-  // If user tapped the video element (or inside it), trigger capture
   if(target && target.id === 'video') {
     captureNow();
     return;
@@ -81,7 +147,6 @@ function handleGlobalTap(event){
     captureNow();
     return;
   }
-  // If user didn't tap an explicit UI control, trigger capture
   if(!target.closest || !target.closest('button,select')) {
     captureNow();
   }
@@ -129,6 +194,23 @@ async function startCamera(deviceId){
     hintText.textContent = '提示：把纸张放进虚线框内，点击屏幕任意位置即可拍照并检测；也可使用下方按钮。';
     // Use ENTRY_PROMPT variable so we can attempt playback from multiple places
     speak(ENTRY_PROMPT);
+
+    // show full-screen overlay to ensure taps are captured even if other elements interfere
+    showTapOverlay(true);
+
+    // heuristic: if speech didn't start, show manual TTS button after short delay
+    setTimeout(()=>{
+      try{
+        if('speechSynthesis' in window && !window.speechSynthesis.speaking){
+          ensureTtsButton();
+          ttsButton.style.display = 'block';
+          dbg('TTS likely blocked; showing manual button');
+        } else {
+          dbg('TTS speaking status:', window.speechSynthesis && window.speechSynthesis.speaking);
+        }
+      }catch(e){ dbg('tts detection failed', e); }
+    }, 800);
+
   }catch(e){
     console.error('startCamera', e);
     statusEl.textContent = '无法访问相机：' + (e.message || e.name);
@@ -255,7 +337,6 @@ exportBtn.addEventListener('click', ()=>{
   const blob = new Blob([JSON.stringify(lastResult, null, 2)], {type:'application/json'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'color-check-result.json'; document.body.appendChild(a); a.click(); a.remove();
 });
-
 saveBtn.addEventListener('click', ()=>{
   if(!lastResult){ alert('无可保存结果'); return; }
   const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
@@ -345,6 +426,8 @@ function ensureAudioOnGesture(){
   if(idx === -1) idx = 0;
   if(cameraSelect.options[idx]) cameraSelect.selectedIndex = idx;
   await startCamera(cameraSelect.value);
+  // create tts button but hidden; will be shown if autoplay blocked
+  ensureTtsButton();
   if('serviceWorker' in navigator){
     try{ await navigator.serviceWorker.register('sw.js'); console.log('sw registered'); }catch(e){ console.warn('sw register failed', e); }
   }
