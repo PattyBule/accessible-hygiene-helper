@@ -36,6 +36,9 @@ function dbg(...args){ if(ENABLE_DEBUG) console.log('[cam-debug]', ...args); }
 let tapOverlay = null;
 let ttsButton = null;
 let audioCtx = null;
+let wakeAudio = null;
+// Use a small hosted beep as MP3/OGG to maximize compatibility
+const BEEP_PATH = 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg';
 
 function ensureTapOverlay(){
   if(tapOverlay) return;
@@ -68,6 +71,46 @@ function showTapOverlay(show){
   dbg('tapOverlay display', show);
 }
 
+function ensureWakeAudio(){
+  if(wakeAudio) return;
+  try{
+    wakeAudio = new Audio(BEEP_PATH);
+    wakeAudio.preload = 'auto';
+    wakeAudio.crossOrigin = 'anonymous';
+  }catch(e){ dbg('ensureWakeAudio failed', e); wakeAudio = null; }
+}
+
+function playWakeBeep(){
+  return new Promise(async (resolve)=>{
+    ensureWakeAudio();
+    if(wakeAudio){
+      try{
+        const p = wakeAudio.play();
+        if(p && p.then){
+          // wait for ended event
+          const onEnded = ()=>{ wakeAudio.removeEventListener('ended', onEnded); resolve(); };
+          wakeAudio.addEventListener('ended', onEnded);
+          p.catch((e)=>{
+            dbg('wakeAudio play rejected', e);
+            // fallback to WebAudio beep
+            playShortBeep().then(resolve).catch(()=>resolve());
+          });
+        }else{
+          // older browsers
+          const onEnded = ()=>{ wakeAudio.removeEventListener('ended', onEnded); resolve(); };
+          wakeAudio.addEventListener('ended', onEnded);
+        }
+      }catch(e){
+        dbg('wakeAudio play error', e);
+        playShortBeep().then(resolve).catch(()=>resolve());
+      }
+    } else {
+      // fallback
+      playShortBeep().then(resolve).catch(()=>resolve());
+    }
+  });
+}
+
 function ensureTtsButton(){
   if(ttsButton) return;
   ttsButton = document.createElement('button');
@@ -84,14 +127,15 @@ function ensureTtsButton(){
     border: 'none',
     borderRadius: '6px'
   });
-  ttsButton.addEventListener('click', ()=>{
+  ttsButton.addEventListener('click', async ()=>{
     dbg('ttsButton clicked');
-    // Play a short beep first so mobile browsers allow subsequent speech
-    playShortBeep().then(()=> speak(ENTRY_PROMPT));
+    await playWakeBeep();
+    speak(ENTRY_PROMPT);
     ttsButton.style.display = 'none';
   });
   document.body.appendChild(ttsButton);
-  ttsButton.style.display = 'none';
+  // show by default on mobile so user can force audio
+  ttsButton.style.display = 'block';
 }
 
 window.addEventListener('beforeunload', ()=>{ showTapOverlay(false); });
@@ -154,14 +198,13 @@ function handleGlobalTap(event){
   }
 }
 
-// Play a short beep using WebAudio to create a user-gesture-initiated audio context
+// WebAudio fallback short beep
 function playShortBeep(durationMs=80, freq=880){
   return new Promise((resolve)=>{
     try{
       if(!audioCtx){
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
-      // Resume context if suspended
       if(audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
       const osc = audioCtx.createOscillator();
@@ -428,11 +471,11 @@ document.addEventListener('keydown', (e)=>{
 // Attempt to ensure speech plays on load; many mobile browsers block autoplay.
 function ensureAudioOnGesture(){
   const handler = async ()=>{
-    // play a short beep first, then speak the entry prompt
-    dbg('ensureAudioOnGesture: user gesture received; playing beep');
+    // play a short wake beep (MP3) first, then speak the entry prompt
+    dbg('ensureAudioOnGesture: user gesture received; playing wake beep');
     try{
-      await playShortBeep();
-    }catch(e){ dbg('beep failed', e); }
+      await playWakeBeep();
+    }catch(e){ dbg('wake beep failed', e); }
     speak(ENTRY_PROMPT);
     try{
       document.body.removeEventListener('touchstart', handler, {passive:true});
@@ -472,7 +515,7 @@ function ensureAudioOnGesture(){
   if(idx === -1) idx = 0;
   if(cameraSelect.options[idx]) cameraSelect.selectedIndex = idx;
   await startCamera(cameraSelect.value);
-  // create tts button but hidden; will be shown if autoplay blocked
+  // create tts button but visible by default on mobile so user can force audio
   ensureTtsButton();
   if('serviceWorker' in navigator){
     try{ await navigator.serviceWorker.register('sw.js'); console.log('sw registered'); }catch(e){ console.warn('sw register failed', e); }
