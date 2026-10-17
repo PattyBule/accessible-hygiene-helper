@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>无障碍卫生助手（语音辅助）</title>
+  <title>Accessible Hygiene Helper (Voice Assistant)</title>
   <meta name="theme-color" content="#0366d6" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="manifest.json" />
@@ -11,19 +11,17 @@
 <body>
   <main id="main" role="main" class="container">
     <header class="topbar">
-      <h1 id="title" aria-label="无障碍卫生助手">无障碍卫生助手</h1>
-      <button id="guideBtn" class="iconBtn" aria-label="点击查看使用指南">使用指南</button>
+      <h1 id="title" aria-label="Accessible Hygiene Helper">Hygiene Helper</h1>
+      <button id="guideBtn" class="iconBtn" aria-label="View instructions">Guide</button>
     </header>
 
     <section class="card" aria-labelledby="camTitle">
-      <h2 id="camTitle">相机检测准备</h2>
+      <h2 id="camTitle">Camera Ready</h2>
 
-      <!-- 隐藏不必要的下拉框对盲人干扰 -->
       <div class="controls" aria-hidden="true" style="display:none;">
-        <label for="cameraSelect">选择摄像头</label>
         <select id="cameraSelect"></select>
-        <button id="toggleTorch" type="button">闪光灯</button>
-        <button id="fullBtn" type="button">全屏拍摄</button>
+        <button id="toggleTorch" type="button">Flash</button>
+        <button id="fullBtn" type="button">Fullscreen</button>
       </div>
 
       <div class="videoWrap" aria-live="polite">
@@ -32,53 +30,53 @@
       </div>
 
       <div class="row" style="margin-top: 15px;">
-        <button id="calibrateBtn" class="big" type="button" aria-label="点击进行白卡校准，推荐在开始前使用">白卡校准（推荐）</button>
-        <button id="captureBtn" class="big primary" type="button" aria-label="点击拍照并开始检测">拍照并检测</button>
+        <button id="calibrateBtn" class="big" type="button" aria-label="White balance calibration, recommended before use">Calibrate</button>
+        <button id="captureBtn" class="big primary" type="button" aria-label="Take photo and start detection">Take Photo</button>
       </div>
 
-      <div class="hint" id="hintText" aria-live="polite">提示：将纸巾/布平铺，确保光线充足，点击屏幕任意位置即可拍照。</div>
+      <div class="hint" id="hintText" aria-live="polite">Tip: Tap anywhere on the screen to capture.</div>
     </section>
 
     <section class="card" aria-labelledby="resultTitle">
-      <h2 id="resultTitle">检测结果</h2>
-      <!-- 这是最关键的修改：使用 role="alert" 和 assertive 强制读屏 -->
-      <div id="status" class="status" role="alert" aria-live="assertive">准备就绪，请将手机对准检测区域，点击屏幕拍照。</div>
+      <h2 id="resultTitle">Detection Result</h2>
+      <div id="status" class="status" role="alert" aria-live="assertive">Ready. Tap anywhere on the screen to capture.</div>
 
       <div class="resultRow" aria-hidden="true">
         <div class="swatchWrap">
           <div id="swatch" class="swatch"></div>
-          <div class="swatchLabel">平均颜色</div>
+          <div class="swatchLabel">Average Color</div>
         </div>
         <pre id="vals" class="vals">—</pre>
       </div>
 
       <div class="row" style="margin-top: 15px;">
-        <button id="repeatBtn" type="button" aria-label="重新播报刚才的检测结果">重复播报</button>
-        <button id="exportBtn" type="button" aria-label="导出本次检测的数据">导出结果</button>
+        <button id="repeatBtn" type="button" aria-label="Repeat the last result">Repeat</button>
+        <button id="exportBtn" type="button" aria-label="Export data">Export</button>
       </div>
     </section>
 
     <footer class="note" aria-hidden="true">
-      隐私说明：图片仅在本地处理，不会上传；该工具仅供辅助判断，非医疗诊断。
+      <p>Privacy: Images are processed locally and never uploaded. This tool is not a medical diagnosis.</p >
+      <p style="margin-top: 10px;">
+        <a href=" " style="color: #0366d6; margin-right: 15px;">Privacy Policy</a >
+        <a href="./terms.html" style="color: #0366d6;">Terms of Service</a >
+      </p >
     </footer>
 
-    <!-- 指南弹窗 -->
     <div id="guideModal" class="modal" aria-hidden="true">
       <div class="modalContent" role="dialog" aria-labelledby="guideTitle">
-        <h3 id="guideTitle">使用指南</h3>
+        <h3 id="guideTitle">Instructions</h3>
         <ul>
-          <li>在充足光线下拍摄，后置摄像头效果更好。</li>
-          <li>建议先进行白卡校准：把白纸放入框内并点击“白卡校准”。</li>
-          <li>把纸巾平铺并将要检测区域置于虚线框内，点击屏幕或“拍照并检测”。</li>
-          <li>听到检测结果后，如果需要重听，可以点击“重复播报”。</li>
+          <li>Ensure good lighting. Back camera works best.</li>
+          <li>Tap "Calibrate" with a white paper in the frame.</li>
+          <li>Place the tissue in the dashed box and tap anywhere to capture.</li>
         </ul>
         <div class="row">
-          <button id="closeGuide" aria-label="关闭使用指南">关闭</button>
+          <button id="closeGuide" aria-label="Close instructions">Close</button>
         </div>
       </div>
     </div>
   </main>
-
   <script src="app.js"></script>
 </body>
 </html>
