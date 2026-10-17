@@ -56,12 +56,13 @@
     </section>
 
     <footer class="note" aria-hidden="true">
-      <p>Privacy: Images are processed locally and never uploaded. This tool is not a medical diagnosis.</p >
-      <p style="margin-top: 10px;">
-        <a href=" " style="color: #0366d6; margin-right: 15px;">Privacy Policy</a >
-        <a href="./terms.html" style="color: #0366d6;">Terms of Service</a >
-      </p >
-    </footer>
+  <p>Privacy: Images are processed locally and never uploaded. This tool is not a medical diagnosis.</p >
+  <p style="margin-top: 10px;">
+    <!-- 这里加了 onclick="event.stopPropagation()" 是为了防止被全屏拍照功能拦截 -->
+    <a href=" " onclick="event.stopPropagation()" style="color: #0366d6; margin-right: 15px; text-decoration: underline;">Privacy Policy</a >
+    <a href="terms.html" onclick="event.stopPropagation()" style="color: #0366d6; text-decoration: underline;">Terms of Service</a >
+  </p >
+</footer>
 
     <div id="guideModal" class="modal" aria-hidden="true">
       <div class="modalContent" role="dialog" aria-labelledby="guideTitle">
