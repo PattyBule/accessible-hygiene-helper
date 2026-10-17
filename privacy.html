@@ -3,31 +3,87 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Privacy Policy - Accessible Hygiene Helper</title>
+  <title>Accessible Hygiene Helper (Voice Assistant)</title>
+  <meta name="theme-color" content="#0366d6" />
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    body { padding: 20px; font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; color: #333; }
-    h1 { font-size: 24px; border-bottom: 2px solid #0366d6; padding-bottom: 10px; }
-    h2 { font-size: 18px; margin-top: 25px; }
-    .back-btn { display: inline-block; margin-top: 30px; padding: 10px 20px; background: #0366d6; color: white; text-decoration: none; border-radius: 5px; }
-  </style>
+  <link rel="manifest" href="manifest.json" />
 </head>
 <body>
-  <h1>Privacy Policy</h1>
-  <p><strong>Last Updated: October 2026</strong></p >
-  <p>Your privacy is critically important to us, especially regarding sensitive personal hygiene data. This Privacy Policy explains how we handle your information.</p >
-  <h2>1. Image Data (No Upload)</h2>
-  <p>All image processing and analysis are performed <strong>locally on your device</strong> using your web browser's built-in capabilities. We <strong>do not collect, store, upload, or share</strong> any of your photos or camera feeds. Your images never leave your device.</p >
-  <h2>2. Permissions</h2>
-  <p>We request the following device permissions:</p >
-  <ul>
-    <li><strong>Camera:</strong> Required to capture the image for local analysis.</li>
-    <li><strong>Vibration:</strong> Used to provide haptic feedback for visually impaired users.</li>
-  </ul>
-  <h2>3. Third-Party Services</h2>
-  <p>We do not use any third-party image processing APIs. If your device uses a built-in text-to-speech (TTS) engine or screen reader, the text data (e.g., "Clean" or "Please wipe again") may be processed by your device's operating system. We do not transmit this text data to our servers.</p >
-  <h2>4. Data Security</h2>
-  <p>Because we do not collect or store your images or personal data, there is no database that can be breached. Your usage is completely anonymous.</p >
-  <a href=" " class="back-btn">Return to Home</a >
+  <main id="main" role="main" class="container">
+    <header class="topbar">
+      <h1 id="title" aria-label="Accessible Hygiene Helper">Hygiene Helper</h1>
+      <button id="guideBtn" class="iconBtn" aria-label="View instructions">Guide</button>
+    </header>
+
+    <section class="card" aria-labelledby="camTitle">
+      <h2 id="camTitle">Camera Ready</h2>
+
+      <!-- 隐藏不必要的下拉框对盲人干扰 -->
+      <div class="controls" aria-hidden="true" style="display:none;">
+        <label for="cameraSelect">Select Camera</label>
+        <select id="cameraSelect"></select>
+        <button id="toggleTorch" type="button">Flash</button>
+        <button id="fullBtn" type="button">Fullscreen</button>
+      </div>
+
+      <div class="videoWrap" aria-live="polite">
+        <video id="video" autoplay playsinline muted></video>
+        <div id="roi" class="roi" aria-hidden="true"></div>
+      </div>
+
+      <div class="row" style="margin-top: 15px;">
+        <button id="calibrateBtn" class="big" type="button" aria-label="White balance calibration, recommended before use">Calibrate</button>
+        <button id="captureBtn" class="big primary" type="button" aria-label="Take photo and start detection">Take Photo</button>
+      </div>
+
+      <div class="hint" id="hintText" aria-live="polite">Tip: Tap anywhere on the screen to capture.</div>
+    </section>
+
+    <section class="card" aria-labelledby="resultTitle">
+      <h2 id="resultTitle">Detection Result</h2>
+      <!-- 关键的无障碍强制朗读标签 -->
+      <div id="status" class="status" role="alert" aria-live="assertive">Ready. Tap anywhere on the screen to capture. 24-hour free trial started.</div>
+
+      <div class="resultRow" aria-hidden="true">
+        <div class="swatchWrap">
+          <div id="swatch" class="swatch"></div>
+          <div class="swatchLabel">Average Color</div>
+        </div>
+        <pre id="vals" class="vals">—</pre>
+      </div>
+
+      <div class="row" style="margin-top: 15px;">
+        <button id="repeatBtn" type="button" aria-label="Repeat the last result">Repeat</button>
+        <button id="exportBtn" type="button" aria-label="Export data">Export</button>
+      </div>
+    </section>
+
+    <!-- 底部区域：这就是解决你链接打不开的关键 -->
+    <footer class="note" aria-hidden="true">
+      <p>Privacy: Images are processed locally and never uploaded. This tool is not a medical diagnosis.</p >
+      <p style="margin-top: 10px;">
+        <a href=" " style="color: #0366d6; margin-right: 15px; text-decoration: underline;">Privacy Policy</a >
+        <a href="terms.html" style="color: #0366d6; text-decoration: underline;">Terms of Service</a >
+      </p >
+    </footer>
+
+    <!-- 指南弹窗 -->
+    <div id="guideModal" class="modal" aria-hidden="true">
+      <div class="modalContent" role="dialog" aria-labelledby="guideTitle">
+        <h3 id="guideTitle">Instructions</h3>
+        <ul>
+          <li>Ensure good lighting. Back camera works best.</li>
+          <li>Tap "Calibrate" with a white paper in the frame.</li>
+          <li>Place the tissue in the dashed box and tap anywhere to capture.</li>
+          <li>Tap "Repeat" if you didn't hear the result.</li>
+        </ul>
+        <div class="row">
+          <button id="closeGuide" aria-label="Close instructions">Close</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
 </body>
 </html>
