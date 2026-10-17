@@ -120,7 +120,8 @@ function captureAndDetect() {
 captureBtn.addEventListener('click', captureAndDetect);
 
 document.body.addEventListener('click', (e) => {
-  if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT') {
+  // 如果点的是按钮、下拉框或者链接，就不触发拍照
+  if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'A') {
     captureAndDetect();
   }
 });
