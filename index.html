@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>颜色与污渍检测（Web + H5 / PWA）</title>
+  <title>无障碍卫生助手（语音辅助）</title>
   <meta name="theme-color" content="#0366d6" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="manifest.json" />
@@ -11,17 +11,18 @@
 <body>
   <main id="main" role="main" class="container">
     <header class="topbar">
-      <h1 id="title">颜色与污渍检测</h1>
-      <button id="guideBtn" class="iconBtn" aria-label="使用指南">?</button>
+      <h1 id="title" aria-label="无障碍卫生助手">无障碍卫生助手</h1>
+      <button id="guideBtn" class="iconBtn" aria-label="点击查看使用指南">使用指南</button>
     </header>
 
     <section class="card" aria-labelledby="camTitle">
-      <h2 id="camTitle">相机检测（把目标放在框内）</h2>
+      <h2 id="camTitle">相机检测准备</h2>
 
-      <div class="controls">
-        <label for="cameraSelect" class="sr">选择摄像头</label>
-        <select id="cameraSelect" aria-label="选择摄像头"></select>
-        <button id="toggleTorch" type="button" aria-pressed="false">闪光灯</button>
+      <!-- 隐藏不必要的下拉框对盲人干扰 -->
+      <div class="controls" aria-hidden="true" style="display:none;">
+        <label for="cameraSelect">选择摄像头</label>
+        <select id="cameraSelect"></select>
+        <button id="toggleTorch" type="button">闪光灯</button>
         <button id="fullBtn" type="button">全屏拍摄</button>
       </div>
 
@@ -30,48 +31,49 @@
         <div id="roi" class="roi" aria-hidden="true"></div>
       </div>
 
-      <div class="row">
-        <button id="calibrateBtn" class="big" type="button">白卡校准（推荐）</button>
-        <button id="captureBtn" class="big primary" type="button">拍照并检测</button>
+      <div class="row" style="margin-top: 15px;">
+        <button id="calibrateBtn" class="big" type="button" aria-label="点击进行白卡校准，推荐在开始前使用">白卡校准（推荐）</button>
+        <button id="captureBtn" class="big primary" type="button" aria-label="点击拍照并开始检测">拍照并检测</button>
       </div>
 
-      <div class="hint" id="hintText">提示：将纸巾/布平铺，确保光线充足，框内对准要检测区域。</div>
+      <div class="hint" id="hintText" aria-live="polite">提示：将纸巾/布平铺，确保光线充足，点击屏幕任意位置即可拍照。</div>
     </section>
 
     <section class="card" aria-labelledby="resultTitle">
       <h2 id="resultTitle">检测结果</h2>
-      <div id="status" class="status" aria-live="polite">未检测</div>
+      <!-- 这是最关键的修改：使用 role="alert" 和 assertive 强制读屏 -->
+      <div id="status" class="status" role="alert" aria-live="assertive">准备就绪，请将手机对准检测区域，点击屏幕拍照。</div>
 
-      <div class="resultRow">
+      <div class="resultRow" aria-hidden="true">
         <div class="swatchWrap">
-          <div id="swatch" class="swatch" role="img" aria-label="颜色样本"></div>
+          <div id="swatch" class="swatch"></div>
           <div class="swatchLabel">平均颜色</div>
         </div>
-        <pre id="vals" class="vals" aria-hidden="false">—</pre>
+        <pre id="vals" class="vals">—</pre>
       </div>
 
-      <div class="row">
-        <button id="repeatBtn" type="button">重复播报</button>
-        <button id="exportBtn" type="button">导出结果</button>
-        <button id="saveBtn" type="button">保存本地</button>
+      <div class="row" style="margin-top: 15px;">
+        <button id="repeatBtn" type="button" aria-label="重新播报刚才的检测结果">重复播报</button>
+        <button id="exportBtn" type="button" aria-label="导出本次检测的数据">导出结果</button>
       </div>
     </section>
 
-    <footer class="note">
+    <footer class="note" aria-hidden="true">
       隐私说明：图片仅在本地处理，不会上传；该工具仅供辅助判断，非医疗诊断。
     </footer>
 
+    <!-- 指南弹窗 -->
     <div id="guideModal" class="modal" aria-hidden="true">
       <div class="modalContent" role="dialog" aria-labelledby="guideTitle">
-        <h3 id="guideTitle">使用指南（语音提示可用）</h3>
+        <h3 id="guideTitle">使用指南</h3>
         <ul>
           <li>在充足光线下拍摄，后置摄像头效果更好。</li>
           <li>建议先进行白卡校准：把白纸放入框内并点击“白卡校准”。</li>
-          <li>把纸巾或内裤平铺并将要检测区域置于虚线框内，点击“拍照并检测”。</li>
-          <li>若页面提示“无法判断”，请重拍或优化光照与角度。</li>
+          <li>把纸巾平铺并将要检测区域置于虚线框内，点击屏幕或“拍照并检测”。</li>
+          <li>听到检测结果后，如果需要重听，可以点击“重复播报”。</li>
         </ul>
         <div class="row">
-          <button id="closeGuide">关闭</button>
+          <button id="closeGuide" aria-label="关闭使用指南">关闭</button>
         </div>
       </div>
     </div>
