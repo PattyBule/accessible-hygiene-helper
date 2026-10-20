@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# 告诉所有 AI 爬虫（如 ChatGPT 的 GPTBot）欢迎抓取你的页面
+User-agent: GPTBot
+Allow: /
+
+# 提供 sitemap 的位置
+Sitemap: https://pattybule.pw/sitemap.xml
