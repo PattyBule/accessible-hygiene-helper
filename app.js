@@ -88,12 +88,17 @@ function captureAndDetect() {
 
 captureBtn.addEventListener('click', captureAndDetect);
 
-// 核心修复：拦截全屏点击事件
-document.body.addEventListener('click', (e) => {
-  // 如果点击的是按钮、链接、下拉框，或者它们的子元素，直接放行，不拍照
-  if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) {
-    return; 
+// 核心修复：只要点的是 <a> (链接) 或 <button> (按钮)，直接放行，绝对不拍照
+document.body.addEventListener('click', function(e) {
+  let target = e.target;
+  // 向上查找被点击的元素是不是链接或按钮
+  while (target && target !== document.body) {
+    if (target.tagName === 'A' || target.tagName === 'BUTTON' || target.tagName === 'SELECT') {
+      return; // 如果是，直接退出，把点击交给浏览器处理（跳转）
+    }
+    target = target.parentNode;
   }
+  // 如果点的是背景空白处，才触发拍照
   captureAndDetect();
 });
 
