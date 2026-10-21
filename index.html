@@ -3,22 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <!-- SEO 核心标签 -->
-<title>Accessible Hygiene Helper | Blind & Visually Impaired Toilet Aid</title>
-  <meta name="msvalidate.01" content="E5F9010CDBE35A2A0686C9C7CED09BEE" />
-<meta name="description" content="A privacy-first web tool for blind and visually impaired users to independently confirm cleanliness after using the toilet. Features voice feedback, haptic vibration, and 100% local image processing. Free 24-hour trial available.">
-<meta name="keywords" content="blind toilet aid, visually impaired hygiene, accessible wiping tool, blind independent living, tactile feedback, screen reader compatible">
-
-<!-- 告诉搜索引擎爬虫和 AI 允许抓取 -->
-<meta name="robots" content="index, follow">
-
-<!-- 社交分享卡片（如果有人把你的网址发到推特或脸书，会显示漂亮的卡片） -->
-<meta property="og:title" content="Accessible Hygiene Helper for the Blind">
-<meta property="og:description" content="Independently confirm cleanliness with voice and vibration. 100% private, processed locally on your device.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://pattybule.pw/">
-
-<meta name="theme-color" content="#0366d6" />
+  <title>Accessible Hygiene Helper | Blind & Visually Impaired Toilet Aid</title>
+  <meta name="description" content="A privacy-first web tool for blind and visually impaired users to independently confirm cleanliness. Features voice feedback, haptic vibration, and 100% local image processing.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0366d6" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="manifest.json" />
 </head>
@@ -29,7 +17,6 @@
         <h1 id="title" aria-label="Accessible Hygiene Helper">Hygiene Helper</h1>
         <button id="guideBtn" class="iconBtn" aria-label="View instructions">Guide</button>
       </div>
-      <!-- 明码标价区域（审核员必看） -->
       <p style="font-size: 14px; color: #0366d6; font-weight: bold; margin: 0;">
         Pricing: 24-Hour Free Trial, then $4.99/month. Auto-renews, cancel anytime.
       </p >
@@ -60,16 +47,20 @@
         <pre id="vals" class="vals">—</pre>
       </div>
 
-      <!-- 支付按钮区域 -->
-      <div id="payArea" style="margin-top: 25px; text-align: center; padding: 15px; background: #f0f8ff; border-radius: 8px; border: 2px solid #10b981;">
+      <div class="row" style="margin-top: 15px;">
+        <button id="repeatBtn" type="button" aria-label="Repeat the last result">Repeat</button>
+        <button id="exportBtn" type="button" aria-label="Export data">Export</button>
+      </div>
+
+      <!-- 支付区域（强制显示，且带上你的真实链接和防拦截代码） -->
+      <div id="payArea" style="display: block; margin-top: 25px; text-align: center; padding: 15px; background: #f0f8ff; border-radius: 8px; border: 2px solid #10b981;">
         <p style="margin-bottom: 10px; font-weight: bold; color: #333;">Unlock Unlimited Checks</p >
-        <a href=" " target="_blank" id="payBtn" style="display:inline-block; padding: 15px 30px; background: #10b981; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px;">
+        <a href=" " target="_blank" onclick="event.stopPropagation()" id="payBtn" style="cursor:pointer; display:inline-block; padding: 15px 30px; background: #10b981; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px;">
           Subscribe for $4.99/month
         </a >
       </div>
     </section>
 
-    <!-- 底部链接：使用强制跳转按钮 -->
     <footer class="note">
       <p aria-hidden="true">Privacy: Images are processed locally and never uploaded. This tool is not a medical diagnosis.</p >
       <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
