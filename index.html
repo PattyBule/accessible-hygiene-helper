@@ -4,8 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Accessible Hygiene Helper | Blind & Visually Impaired Toilet Aid</title>
-  <meta name="description" content="A privacy-first web tool for blind and visually impaired users to independently confirm cleanliness. Features voice feedback, haptic vibration, and 100% local image processing.">
-  <meta name="robots" content="index, follow">
+  <meta name="description" content="A privacy-first web tool for blind and visually impaired users to independently confirm cleanliness.">
   <meta name="theme-color" content="#0366d6" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="manifest.json" />
@@ -52,8 +51,8 @@
         <button id="exportBtn" type="button" aria-label="Export data">Export</button>
       </div>
 
-      <!-- 支付区域（强制显示，且带上你的真实链接和防拦截代码） -->
-      <div id="payArea" style="display: block; margin-top: 25px; text-align: center; padding: 15px; background: #f0f8ff; border-radius: 8px; border: 2px solid #10b981;">
+      <!-- 支付区域：强制显示，高Z-index防止被遮挡 -->
+      <div id="payArea" style="display: block; margin-top: 25px; text-align: center; padding: 15px; background: #f0f8ff; border-radius: 8px; border: 2px solid #10b981; position: relative; z-index: 9999;">
         <p style="margin-bottom: 10px; font-weight: bold; color: #333;">Unlock Unlimited Checks</p >
         <a href=" " target="_blank" onclick="event.stopPropagation()" id="payBtn" style="cursor:pointer; display:inline-block; padding: 15px 30px; background: #10b981; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px;">
           Subscribe for $4.99/month
@@ -63,7 +62,7 @@
 
     <footer class="note">
       <p aria-hidden="true">Privacy: Images are processed locally and never uploaded. This tool is not a medical diagnosis.</p >
-      <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+      <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; position: relative; z-index: 9999;">
         <button type="button" onclick="window.location.href='privacy.html';" style="padding: 10px 15px; background: #0366d6; color: white; border: none; border-radius: 5px; font-size: 14px; cursor: pointer;">Privacy Policy</button>
         <button type="button" onclick="window.location.href='terms.html';" style="padding: 10px 15px; background: #0366d6; color: white; border: none; border-radius: 5px; font-size: 14px; cursor: pointer;">Terms of Service</button>
       </div>
