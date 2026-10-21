@@ -88,8 +88,9 @@ function captureAndDetect() {
 
 captureBtn.addEventListener('click', captureAndDetect);
 
-// 修复点击拦截：如果点击的是按钮、链接或它们里面的字，就不触发拍照
+// 核心修复：拦截全屏点击事件
 document.body.addEventListener('click', (e) => {
+  // 如果点击的是按钮、链接、下拉框，或者它们的子元素，直接放行，不拍照
   if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) {
     return; 
   }
@@ -98,7 +99,7 @@ document.body.addEventListener('click', (e) => {
 
 window.addEventListener('load', () => {
   startCamera();
-  statusDiv.innerText = "Ready. Tap anywhere on the screen to capture. 24-hour free trial started.";
+  statusDiv.innerText = "Ready. Tap anywhere on the screen to capture.";
 });
 
 calibrateBtn.addEventListener('click', () => {
